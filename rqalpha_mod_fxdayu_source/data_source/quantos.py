@@ -1,5 +1,5 @@
 from datetime import date
-
+import numpy as np
 import asyncio
 import pandas as pd
 from dateutil.relativedelta import relativedelta
@@ -51,17 +51,17 @@ class QuantOsSource(OddFrequencyBaseDataSource, MiniteBarDataSourceMixin, QuantO
         symbol = instrument_to_tushare(instrument)
         if frequency in ["1d"]:
             if start_dt and end_dt:
-                s_date_int = convert_date_to_int(start_dt.date())
-                e_date_int = convert_date_to_int(end_dt.date())
+                s_date_int = np.uint64(convert_date_to_int(start_dt))
+                e_date_int = np.uint64(convert_date_to_int(end_dt))
             elif start_dt and length:
                 dates = self._dates_index(instrument)
-                s_date_int = convert_date_to_int(start_dt.date())
+                s_date_int = np.uint64(convert_date_to_int(start_dt))
                 s_pos = safe_searchsorted(dates, s_date_int)
                 s_date_int = int(dates[s_pos])
                 e_date_int = int(dates[min(s_pos + length, len(dates)) - 1])
             elif end_dt and length:
                 dates = self._dates_index(instrument)
-                e_date_int = convert_date_to_int(end_dt.date())
+                e_date_int = np.uint64(convert_date_to_int(end_dt))
                 e_pos = safe_searchsorted(dates, e_date_int, side="right")
                 s_date_int = int(dates[max(e_pos - length, 0)])
                 e_date_int = int(dates[e_pos - 1])

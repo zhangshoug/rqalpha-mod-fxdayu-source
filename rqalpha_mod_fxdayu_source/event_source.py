@@ -12,8 +12,10 @@ except ImportError:
 from rqalpha.const import DEFAULT_ACCOUNT_TYPE
 from rqalpha.events import Event, EVENT
 from rqalpha.mod.rqalpha_mod_sys_simulation.simulation_event_source import SimulationEventSource
-from rqalpha.mod.rqalpha_mod_sys_stock_realtime.event_source import RealtimeEventSource
-from rqalpha.mod.rqalpha_mod_sys_stock_realtime.utils import is_holiday_today
+from rqalpha_mod_stock_realtime.event_source import RealtimeEventSource
+from rqalpha_mod_stock_realtime.utils import is_holiday_today
+# from rqalpha.mod.rqalpha_mod_sys_stock_realtime.event_source import RealtimeEventSource
+# from rqalpha.mod.rqalpha_mod_sys_stock_realtime.utils import is_holiday_today
 from rqalpha.utils.i18n import gettext as _
 from rqalpha.utils.logger import system_log
 

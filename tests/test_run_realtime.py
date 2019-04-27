@@ -53,8 +53,6 @@ config = {
         "fxdayu_source": {
             "enabled": True,
             "source": "quantos",
-            "quantos_user": "",
-            "quantos_token": "",
         }
     }
 }

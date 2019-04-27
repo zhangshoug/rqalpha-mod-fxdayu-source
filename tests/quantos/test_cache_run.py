@@ -33,6 +33,7 @@ config = {
         "fxdayu_source": {
             "enabled": True,
             "source": "quantos",
+            
         }
     }
 }

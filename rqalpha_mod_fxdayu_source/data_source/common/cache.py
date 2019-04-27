@@ -5,7 +5,7 @@ from lru import LRU
 from weakref import proxy
 
 import numpy as np
-from rqalpha.utils.datetime_func import convert_dt_to_int, convert_int_to_datetime
+from rqalpha.utils.datetime_func import *
 from rqalpha.utils.logger import system_log
 
 
@@ -50,6 +50,8 @@ class Cache(object):
             if end_dt:
                 if self._frequency.endswith("d"):
                     # 日线策略替换为收盘时间
+                    end_dti = np.uint64(convert_date_to_int(end_dt))
+                    end_dt = convert_int_to_datetime(end_dti)
                     end_dt = end_dt.replace(hour=15, minute=00)
                 end_dti = np.uint64(convert_dt_to_int(end_dt))
                 end_pos = bars["datetime"].searchsorted(end_dti, side="right")

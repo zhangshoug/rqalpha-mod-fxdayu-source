@@ -28,10 +28,6 @@ class FxdayuSourceMod(AbstractMod):
             from rqalpha_mod_fxdayu_source.data_source.mongo import MongoDataSource, MongoCacheDataSource
             args = (env.config.base.data_bundle_path, mod_config.mongo_url)
             data_source_cls = MongoCacheDataSource if mod_config.enable_cache else MongoDataSource
-        elif type_ == DataSourceType.BUNDLE:
-            from rqalpha_mod_fxdayu_source.data_source.bundle import BundleCacheDataSource, BundleDataSource
-            args = (env.config.base.data_bundle_path, mod_config.bundle_path)
-            data_source_cls = BundleCacheDataSource if mod_config.enable_cache else BundleDataSource
         elif type_ == DataSourceType.QUANTOS:
             from rqalpha_mod_fxdayu_source.data_source.quantos import QuantOsSource, QuantOsCacheSource
             args = (env.config.base.data_bundle_path, mod_config.quantos_url,
