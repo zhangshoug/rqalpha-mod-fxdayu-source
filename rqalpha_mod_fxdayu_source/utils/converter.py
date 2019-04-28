@@ -40,7 +40,10 @@ class MongoConverter(DataFrameConverter):
 	def df2np(cls, df, fields=None):
 		if "volume" not in df:
 			df["volume"] = df["vol"]
-		return super(QuantOsConverter, cls).df2np(df, fields)
+			df["datetime"] = (df["date"]).astype("str").apply(
+                lambda x:datetime.fromisoformat(str(x))
+            )
+		return super(MongoConverter, cls).df2np(df, fields)
 
 class QuantOsConverter(DataFrameConverter):
     @classmethod

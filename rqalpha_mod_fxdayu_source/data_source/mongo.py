@@ -7,7 +7,7 @@ import pandas as pd
 from dateutil.relativedelta import relativedelta
 from rqalpha.const import INSTRUMENT_TYPE
 from rqalpha.model.instrument import Instrument
-from rqalpha.utils.datetime_func import convert_date_to_int
+from rqalpha.utils.datetime_func import *
 from rqalpha.utils.py2 import lru_cache
 
 from rqalpha_mod_fxdayu_source.data_source.common import CacheMixin
@@ -68,8 +68,8 @@ class MongoDataSource(OddFrequencyBaseDataSource, MiniteBarDataSourceMixin):
             collection = "stock_min"
         else:
             collection = "index_min"
-        filters = {"date": {"$gte": datetime.combine(s_date, time=time()), "$lte": datetime.combine(e_date, time=time()), "code" : code }}
-        projection = {"_id": 0, "date": 0}
+        filters = {"datetime": {"$gte": convert_int_to_datetime(s_dt_int).isoformat(sep=" "), "$lte": convert_int_to_datetime(e_dt_int).isoformat(sep=" ")}, "code" : code, "type":"1min" }
+        projection = {"_id": 0, "_d": 0}
         loop = get_asyncio_event_loop()
         bars = loop.run_until_complete(self._do_get_bars(db, collection, filters, projection))
         if bars is not None and bars.size:
@@ -93,7 +93,7 @@ class MongoDataSource(OddFrequencyBaseDataSource, MiniteBarDataSourceMixin):
             else:
                 collection = "index_day"
 
-            data = self._handler.read(collection,code=code, db=db, index = "date", start=start_dt, end=end_dt, length=length, sort=[("date",1)]).reset_index()
+            data = self._handler.read(collection, db=db, code=code, index = "date", start=start_dt, end=end_dt, length=length, sort=[("date",1)]).reset_index()
             if data is not None and data.size:
                 return MongoConverter.df2np(data)
             else:
@@ -105,17 +105,21 @@ class MongoDataSource(OddFrequencyBaseDataSource, MiniteBarDataSourceMixin):
 
     def _get_date_range(self, frequency):
         from pymongo import DESCENDING
+        from datetime import datetime
         db = "quantaxis"
-        key = "date" if frequency.endswith("m") else "datetime"
-        collection = "index_day" if frequency.endswith("m") else "index_min"
+        key = "date" if frequency.endswith("d") else "datetime"
+        collection = "index_day" if frequency.endswith("d") else "index_min"
+        filter = {"code":"000001"} if frequency.endswith("d") else {"code":"000001","type":"1min"}
         try:
-            start = self._handler.client.get_database(db).get_collection(collection).find({"code":"000000"}) \
+            start = self._handler.client.get_database(db).get_collection(collection).find(filter) \
 				.sort(key).limit(1)[0][key]
-            end = self._handle.client.get_database(db).get_collection(collection).find({"code":"000001"}) \
+            end = self._handler.client.get_database(db).get_collection(collection).find(filter) \
 				.sort(key, direction=DESCENDING).limit(1)[0][key]
+            start_dt = convert_dt_to_int(datetime.fromisoformat(start))
+            end_dt = convert_dt_to_int(datetime.fromisoformat(end))
         except IndexError:
             raise RuntimeError("无法从MongoDb获取数据时间范围")
-        return start.date(), end.date()
+        return convert_int_to_date(start_dt).date(), convert_int_to_date(end_dt).date()
 
     @lru_cache(maxsize=10)
     def available_data_range(self, frequency):

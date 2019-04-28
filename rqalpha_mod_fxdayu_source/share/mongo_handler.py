@@ -2,8 +2,9 @@
 from pymongo.mongo_client import database
 import pandas as pd
 import pymongo
-
-
+from datetime import *
+import numpy as np
+from rqalpha.utils.datetime_func import *
 class DataHandler(object):
     def write(self, *args, **kwargs):
         pass
@@ -75,9 +76,13 @@ class MongoHandler(DataHandler):
 
         if index:
             if start:
-                fter = {index: {'$gte': start}}
+                s_date_int = np.uint64(convert_date_to_int(start))
+                start = convert_int_to_date(s_date_int).date()
+                fter = {index: {'$gte': start.isoformat()}, "code":code }
                 if end:
-                    fter[index]['$lte'] = end
+                    e_date_int = np.uint64(convert_date_to_int(end))
+                    end = convert_int_to_date(e_date_int).date()
+                    fter[index]['$lte'] = end.isoformat()
                 elif length:
                     kwargs['limit'] = length
                 kwargs['filter'] = fter
@@ -85,12 +90,16 @@ class MongoHandler(DataHandler):
                 kwargs['sort'] = [(index, -1)]
                 kwargs['limit'] = length
                 if end:
-                    kwargs['filter'] = {index: {'$lte': end}}
+                    e_date_int = np.uint64(convert_date_to_int(end))
+                    end = convert_int_to_date(e_date_int).date()
+                    kwargs['filter'] = {index: {'$lte': end.isoformat()}, "code":code }
             elif end:
-                kwargs['filter'] = {index: {'$lte': end}}
+                e_date_int = np.uint64(convert_date_to_int(end))
+                end = convert_int_to_date(e_date_int).date()
+                kwargs['filter'] = {index: {'$lte': end.isoformat()}, "code":code }
 		
         db = self.db if db is None else self.client[db]
-        kwargs['code'] = code
+
         if isinstance(collection, str):
             # print(collection)
             return self._read(db[collection], index, **kwargs)
