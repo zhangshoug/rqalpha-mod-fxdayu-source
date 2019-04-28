@@ -60,7 +60,7 @@ class MongoHandler(DataHandler):
             collection.create_index(index)
         return {'collection': collection.name, 'start': data[0], 'end': data[-1]}
 
-    def read(self, collection, db=None, index='datetime', start=None, end=None, length=None, **kwargs):
+    def read(self, collection, code, db=None, index='datetime', start=None, end=None, length=None, **kwargs):
         """
 
         :param collection(str): 表名
@@ -88,9 +88,9 @@ class MongoHandler(DataHandler):
                     kwargs['filter'] = {index: {'$lte': end}}
             elif end:
                 kwargs['filter'] = {index: {'$lte': end}}
-
+		
         db = self.db if db is None else self.client[db]
-
+        kwargs['code'] = code
         if isinstance(collection, str):
             # print(collection)
             return self._read(db[collection], index, **kwargs)

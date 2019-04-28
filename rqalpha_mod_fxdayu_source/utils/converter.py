@@ -35,6 +35,12 @@ class DataFrameConverter(object):
         df["datetime"] = df["datetime"].apply(convert_int_to_datetime)
         return df
 
+class MongoConverter(DataFrameConverter):
+	@classmethod
+	def df2np(cls, df, fields=None):
+		if "volume" not in df:
+			df["volume"] = df["vol"]
+		return super(QuantOsConverter, cls).df2np(df, fields)
 
 class QuantOsConverter(DataFrameConverter):
     @classmethod
