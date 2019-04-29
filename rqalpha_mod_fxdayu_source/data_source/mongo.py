@@ -37,17 +37,9 @@ class MongoDataSource(OddFrequencyBaseDataSource, MiniteBarDataSourceMixin):
         self._client = motor.motor_asyncio.AsyncIOMotorClient(mongo_url)
 
     async def _do_get_bars(self, db, collection, filters, projection, fill=np.NaN):
-        dct = {}
-        l = 0
+        dct = []
         async for doc in self._client[db][collection].find(filters, projection):
-            _l = doc.pop('_l')
-            l += _l
-            for key, values in doc.items():
-                if isinstance(values, list) and (len(values) == _l):
-                    dct.setdefault(key, []).extend(values)
-            for values in dct.values():
-                if len(values) != l:
-                    values.extend([fill] * l)
+            dct.append(doc)
         df = pd.DataFrame(dct)
         if df.size:
             return df.sort_values("datetime")
@@ -69,7 +61,7 @@ class MongoDataSource(OddFrequencyBaseDataSource, MiniteBarDataSourceMixin):
         else:
             collection = "index_min"
         filters = {"datetime": {"$gte": convert_int_to_datetime(s_dt_int).isoformat(sep=" "), "$lte": convert_int_to_datetime(e_dt_int).isoformat(sep=" ")}, "code" : code, "type":"1min" }
-        projection = {"_id": 0, "_d": 0}
+        projection = {"_id": 0}
         loop = get_asyncio_event_loop()
         bars = loop.run_until_complete(self._do_get_bars(db, collection, filters, projection))
         if bars is not None and bars.size:
